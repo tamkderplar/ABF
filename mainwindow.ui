@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>801</width>
+    <height>582</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="1" column="2">
+     <widget class="GraphEditor" name="objEditor" native="true"/>
+    </item>
+    <item row="0" column="4">
+     <widget class="QFrame" name="frame">
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="1" column="2">
+        <widget class="QSpinBox" name="sb_topV"/>
+       </item>
+       <item row="1" column="4">
+        <widget class="QSpinBox" name="sb_topE"/>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>topVertex</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QSpinBox" name="sb_botV"/>
+       </item>
+       <item row="2" column="3">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>botEdge</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QRadioButton" name="rb_EV">
+         <property name="text">
+          <string>EV</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="4">
+        <widget class="QSpinBox" name="sb_botE"/>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>botVertex</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QRadioButton" name="rb_VE">
+         <property name="text">
+          <string>VE</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="3">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>topEdge</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="3" colspan="2">
+        <widget class="QPushButton" name="pb_setcontact">
+         <property name="text">
+          <string>Set Contact</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="2" column="4">
+     <widget class="ContactWidget" name="contactView2" native="true"/>
+    </item>
+    <item row="2" column="2">
+     <widget class="GraphEditor" name="obsEditor" native="true"/>
+    </item>
+    <item row="2" column="1">
+     <widget class="StateGLWidget" name="stateWidget" native="true"/>
+    </item>
+    <item row="0" column="1">
+     <widget class="QWidget" name="widget" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="2" column="1">
+        <widget class="QPushButton" name="pb_loadfromfile">
+         <property name="text">
+          <string>Load From File</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QPushButton" name="pb_savetofile">
+         <property name="text">
+          <string>Save To File</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0" rowspan="3">
+        <widget class="QDial" name="dial">
+         <property name="maximum">
+          <number>1023</number>
+         </property>
+         <property name="pageStep">
+          <number>32</number>
+         </property>
+         <property name="wrapping">
+          <bool>true</bool>
+         </property>
+         <property name="notchesVisible">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QPushButton" name="pushButton">
+         <property name="text">
+          <string>Compute BFP Faces</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QPushButton" name="pb_saveimage">
+         <property name="text">
+          <string>Save Image</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="0" column="2">
+     <widget class="ContactWidget" name="contactView1" native="true"/>
+    </item>
+    <item row="1" column="4">
+     <widget class="SceneWidget" name="scene" native="true"/>
+    </item>
+    <item row="1" column="1">
+     <widget class="ThetaSliceView" name="thetaSlice" native="true"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>801</width>
+     <height>20</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>StateGLWidget</class>
+   <extends>QWidget</extends>
+   <header>stateglwidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>GraphEditor</class>
+   <extends>QWidget</extends>
+   <header>grapheditor.h</header>
+   <container>1</container>
+   <slots>
+    <signal>updateOther()</signal>
+   </slots>
+  </customwidget>
+  <customwidget>
+   <class>ContactWidget</class>
+   <extends>QWidget</extends>
+   <header>contactwidget.h</header>
+   <container>1</container>
+   <slots>
+    <signal>objectRequested(QWidget*,QPointF,float)</signal>
+    <signal>objectChanged(int,QPointF,float)</signal>
+   </slots>
+  </customwidget>
+  <customwidget>
+   <class>SceneWidget</class>
+   <extends>QWidget</extends>
+   <header>scenewidget.h</header>
+   <container>1</container>
+   <slots>
+    <slot>addObject(QWidget*,QPointF,float)</slot>
+    <slot>updateObject(int,QPointF,float)</slot>
+   </slots>
+  </customwidget>
+  <customwidget>
+   <class>ThetaSliceView</class>
+   <extends>QWidget</extends>
+   <header>thetasliceview.h</header>
+   <container>1</container>
+   <slots>
+    <signal>objectRequested(QWidget*,QPointF,float)</signal>
+    <signal>objectChanged(int,QPointF,float)</signal>
+   </slots>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>MainWindow</sender>
+   <signal>updateAll()</signal>
+   <receiver>stateWidget</receiver>
+   <slot>update()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>400</x>
+     <y>290</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>212</x>
+     <y>550</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>obsEditor</sender>
+   <signal>updateOther()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onUpdateAll()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>528</x>
+     <y>550</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>400</x>
+     <y>290</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>objEditor</sender>
+   <signal>updateOther()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onUpdateAll()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>528</x>
+     <y>347</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>400</x>
+     <y>290</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>MainWindow</sender>
+   <signal>updateAll()</signal>
+   <receiver>contactView1</receiver>
+   <slot>update()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>400</x>
+     <y>290</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>528</x>
+     <y>144</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>MainWindow</sender>
+   <signal>updateAll()</signal>
+   <receiver>contactView2</receiver>
+   <slot>update()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>400</x>
+     <y>290</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>663</x>
+     <y>452</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>MainWindow</sender>
+   <signal>updateAll()</signal>
+   <receiver>scene</receiver>
+   <slot>update()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>400</x>
+     <y>290</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>791</x>
+     <y>347</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>MainWindow</sender>
+   <signal>updateAll()</signal>
+   <receiver>thetaSlice</receiver>
+   <slot>update()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>400</x>
+     <y>290</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>135</x>
+     <y>242</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>thetaSlice</sender>
+   <signal>objectRequested(QWidget*,QPointF,float)</signal>
+   <receiver>scene</receiver>
+   <slot>addObject(QWidget*,QPointF,float)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>260</x>
+     <y>212</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>594</x>
+     <y>197</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>thetaSlice</sender>
+   <signal>objectChanged(int,QPointF,float)</signal>
+   <receiver>scene</receiver>
+   <slot>updateObject(int,QPointF,float)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>223</x>
+     <y>264</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>599</x>
+     <y>231</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>contactView2</sender>
+   <signal>objectRequested(QWidget*,QPointF,float)</signal>
+   <receiver>scene</receiver>
+   <slot>addObject(QWidget*,QPointF,float)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>707</x>
+     <y>483</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>720</x>
+     <y>313</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>contactView2</sender>
+   <signal>objectChanged(int,QPointF,float)</signal>
+   <receiver>scene</receiver>
+   <slot>updateObject(int,QPointF,float)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>635</x>
+     <y>450</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>630</x>
+     <y>289</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>contactView1</sender>
+   <signal>objectRequested(QWidget*,QPointF,float)</signal>
+   <receiver>scene</receiver>
+   <slot>addObject(QWidget*,QPointF,float)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>480</x>
+     <y>102</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>714</x>
+     <y>200</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>contactView1</sender>
+   <signal>objectChanged(int,QPointF,float)</signal>
+   <receiver>scene</receiver>
+   <slot>updateObject(int,QPointF,float)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>450</x>
+     <y>65</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>742</x>
+     <y>293</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <signal>updateAll()</signal>
+  <slot>onUpdateAll()</slot>
+ </slots>
+</ui>

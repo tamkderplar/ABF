@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ThetaSliceView</class>
+ <widget class="QWidget" name="ThetaSliceView">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="ThetaSliceWidget" name="widget" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="tools" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QDial" name="dial">
+        <property name="maximum">
+         <number>1023</number>
+        </property>
+        <property name="wrapping">
+         <bool>true</bool>
+        </property>
+        <property name="notchesVisible">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="comboBox"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ThetaSliceWidget</class>
+   <extends>QWidget</extends>
+   <header>thetaslicewidget.h</header>
+   <container>1</container>
+   <slots>
+    <signal>objectRequested(QWidget*,QPointF,float)</signal>
+    <signal>objectChanged(int,QPointF,float)</signal>
+    <slot>setAngle1024(int)</slot>
+   </slots>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>dial</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>widget</receiver>
+   <slot>setAngle1024(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>138</x>
+     <y>252</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>136</x>
+     <y>199</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>widget</sender>
+   <signal>objectRequested(QWidget*,QPointF,float)</signal>
+   <receiver>ThetaSliceView</receiver>
+   <slot>addObject(QWidget*,QPointF,float)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>199</x>
+     <y>116</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>widget</sender>
+   <signal>objectChanged(int,QPointF,float)</signal>
+   <receiver>ThetaSliceView</receiver>
+   <slot>updateObject(int,QPointF,float)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>199</x>
+     <y>116</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>addObject(QWidget*,QPointF,float)</slot>
+  <slot>updateObject(int,QPointF,float)</slot>
+ </slots>
+</ui>

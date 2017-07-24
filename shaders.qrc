@@ -1,0 +1,22 @@
+<RCC>
+    <qresource prefix="/shaders/surf-ev">
+        <file alias="fsh.glsl">shaders/surf-ev/sh-surf-ev-fsh.glsl</file>
+        <file alias="gsh.glsl">shaders/surf-ev/sh-surf-ev-gsh.glsl</file>
+        <file alias="vsh.glsl">shaders/surf-ev/sh-surf-ev-vsh.glsl</file>
+    </qresource>
+    <qresource prefix="/shaders/surf-ve">
+        <file alias="fsh.glsl">shaders/surf-ve/sh-surf-ve-fsh.glsl</file>
+        <file alias="gsh.glsl">shaders/surf-ve/sh-surf-ve-gsh.glsl</file>
+        <file alias="vsh.glsl">shaders/surf-ve/sh-surf-ve-vsh.glsl</file>
+    </qresource>
+    <qresource prefix="/shaders/wire">
+        <file alias="fsh.glsl">shaders/wire/sh-wire-fsh.glsl</file>
+        <file alias="gsh.glsl">shaders/wire/sh-wire-gsh.glsl</file>
+        <file alias="vsh.glsl">shaders/wire/sh-wire-vsh.glsl</file>
+    </qresource>
+    <qresource prefix="/shaders/normals">
+        <file alias="fsh.glsl">shaders/normals/fsh.glsl</file>
+        <file alias="gsh.glsl">shaders/normals/gsh.glsl</file>
+        <file alias="vsh.glsl">shaders/normals/vsh.glsl</file>
+    </qresource>
+</RCC>
