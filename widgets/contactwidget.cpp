@@ -4,6 +4,7 @@
 #include <QMouseEvent>
 #include <experimental/optional>
 #include "doublecontactfunction.h"
+#include "restrictedregion.h"
 #include "misc/misc.h"
 
 #include <QDebug>
@@ -177,27 +178,26 @@ void ContactWidget::paintEvent(QPaintEvent *)
             Contact ve1{f,e.p1(),Contact::VertexEdge}, ve2{f,e.p2(),Contact::VertexEdge};
             //TODO: extend to this
             if(ev1==c || ev2==c || ve1==c || ve2==c)continue;
-            DoubleContactFunction dcfs[4] = {{c,ev1},{c,ev2},{c,ve1},{c,ve2}};
+            RestrictedRegion rr = {c,e,f};
+            paint.color(Qt::green);
+            for(auto&s:rr.ceiling()){
+                paint.plot(s.r,s.dcf);
+            }
+            paint.color(Qt::red);
+            for(auto&s:rr.flooring()){
+                paint.plot(s.r,s.dcf);
+            }
+            paint.color(Qt::yellow);
+            for(auto&s:rr.ceiling()){
+                paint.circle({s.r.begin,s.dcf(s.r.begin)});
+                paint.circle({s.r.end,s.dcf(s.r.end)});
+            }
+            for(auto&s:rr.flooring()){
+                paint.circle({s.r.begin,s.dcf(s.r.begin)});
+                paint.circle({s.r.end,s.dcf(s.r.end)});
+            }
+            /*DoubleContactFunction dcfs[4] = {{c,ev1},{c,ev2},{c,ve1},{c,ve2}};
             DoubleContactFunction invs[4] = {{ev1,c},{ev2,c},{ve1,c},{ve2,c}};
-            /*QVector<Range> edges[4];
-            for(int i=0;i<4;i++){
-                for(const Range& r2: invs[i].valued01()){
-                    paint.plot(r2.begin,r2.end,dcfs[i]);
-                    for(const Range& r1: dcfs[i].valued01()){
-                        if(auto r3=r1.intersect(r2)){
-                            edges[i].append(*r3);
-                            paint.color(Qt::yellow);
-                            float a = r3->begin;
-                            float b = r3->end;
-                            //paint.line(QPointF{a,dcfs[i](a)},
-                              //         QPointF{b,dcfs[i](b)});
-                            paint.circle(QPointF{a,dcfs[i](a)});
-                            paint.circle(QPointF{b,dcfs[i](b)});
-                            paint.color(Qt::white);
-                        }
-                    }
-                }
-            }*/
             float theta = std::atan2(cross2(e,f),
                                      dot2(e,f)
                                      );
@@ -219,7 +219,7 @@ void ContactWidget::paintEvent(QPaintEvent *)
             //signed distances of static edge ends
             float s[2] = {  cross2({c.edge.p1(),statedge.p1()},c.edge)/c.edge.length(),
                             cross2({c.edge.p1(),statedge.p2()},c.edge)/c.edge.length()};
-            /*float d[2] = { std::fabs(s[0]), std::fabs(s[1]) };
+            float d[2] = { std::fabs(s[0]), std::fabs(s[1]) };
             float dmax = qMax(d[0],d[1]);
             float dmin = (s[0]*s[1]<0.0)?0.0:qMin(d[0],d[1]);
             float smax = (d[0]>d[1])?s[0]:s[1];
@@ -253,86 +253,6 @@ void ContactWidget::paintEvent(QPaintEvent *)
                     //continuous (but only on one interval, possibly wrapped on 2pi)
                 }
             }*/
-            //
-            int ev = c.type==Contact::VertexEdge;
-            float undef = *dcfs[2-2*ev].undefinedValue();
-            bool uflip = false, tflip = false;
-            if(undef>=glm::pi<float>()){
-                undef-=glm::pi<float>();
-                uflip = true;
-            }
-            if(theta>=glm::pi<float>()){
-                theta-=glm::pi<float>();
-                tflip = true;
-            }
-            //drawing linear
-            int order = ((s[0]<s[1]) != tflip);
-            DoubleContactFunction lin1 = dcfs[order+2*ev];
-            DoubleContactFunction lin2 = dcfs[1-order+2*ev];
-            DoubleContactFunction invlin1 = invs[order+2*ev];
-            DoubleContactFunction invlin2 = invs[1-order+2*ev];
-            for(const Range& r:invlin1.valued01()){
-                //Range r = fce.range;
-                paint.color(Qt::yellow);
-                paint.circle({r.begin,lin1(r.begin)});
-                paint.circle({r.end,lin1(r.end)});
-                //paint.color(QColor(Qt::darkYellow));
-                paint.color(Qt::red);
-                if(auto s = r.intersect({theta,theta+glm::pi<float>()}))paint.plot(*s,lin1);
-                //paint.color(QColor(Qt::darkCyan));
-                paint.color(Qt::green);
-                if(auto s = r.intersect({0.0,theta}))paint.plot(*s,lin1);
-                if(auto s = r.intersect({theta+glm::pi<float>(),glm::two_pi<float>()}))paint.plot(*s,lin1);
-            }
-            for(const Range& r:invlin2.valued01()){
-                //Range r = fce.range;
-                paint.color(Qt::yellow);
-                paint.circle({r.begin,lin2(r.begin)});
-                paint.circle({r.end,lin2(r.end)});
-                //paint.color(QColor(Qt::cyan));
-                paint.color(Qt::green);
-                if(auto s = r.intersect({theta,theta+glm::pi<float>()}))paint.plot(*s,lin2);
-                //paint.color(QColor(Qt::yellow));
-                paint.color(Qt::red);
-                if(auto s = r.intersect({0.0,theta}))paint.plot(*s,lin2);
-                if(auto s = r.intersect({theta+glm::pi<float>(),glm::two_pi<float>()}))paint.plot(*s,lin2);
-            }
-            paint.color(QColor(Qt::white));
-
-            //drawing rational
-            int sign = (uflip!=tflip);
-            DoubleContactFunction rat1 = dcfs[sign+2-2*ev];
-            DoubleContactFunction rat2 = dcfs[1-sign+2-2*ev];
-            DoubleContactFunction invrat1 = invs[sign+2-2*ev];
-            DoubleContactFunction invrat2 = invs[1-sign+2-2*ev];
-            float theta0 = qMin(undef, theta);
-            float theta1 = qMax(undef, theta);
-            for(const Range& r:invrat1.valued01()){
-                //Range r = fce.range;
-                paint.color(Qt::yellow);
-                paint.circle({r.begin,rat1(r.begin)});
-                paint.circle({r.end,rat1(r.end)});
-                paint.color(Qt::red);
-                if(auto s = r.intersect({0.0,theta0}))paint.plot(*s,rat1);
-                if(auto s = r.intersect({theta1,theta0+glm::pi<float>()}))paint.plot(*s,rat1);
-                if(auto s = r.intersect({theta1+glm::pi<float>(),2.0*glm::pi<float>()}))paint.plot(*s,rat1);
-                paint.color(Qt::green);
-                if(auto s = r.intersect({theta0,theta1}))paint.plot(*s,rat1);
-                if(auto s = r.intersect({theta0+glm::pi<float>(),theta1+glm::pi<float>()}))paint.plot(*s,rat1);
-            }
-            for(const Range& r:invrat2.valued01()){
-                //Range r = fce.range;
-                paint.color(Qt::yellow);
-                paint.circle({r.begin,rat2(r.begin)});
-                paint.circle({r.end,rat2(r.end)});
-                paint.color(Qt::green);
-                if(auto s = r.intersect({0.0,theta0}))paint.plot(*s,rat2);
-                if(auto s = r.intersect({theta1,theta0+glm::pi<float>()}))paint.plot(*s,rat2);
-                if(auto s = r.intersect({theta1+glm::pi<float>(),2.0*glm::pi<float>()}))paint.plot(*s,rat2);
-                paint.color(Qt::red);
-                if(auto s = r.intersect({theta0,theta1}))paint.plot(*s,rat2);
-                if(auto s = r.intersect({theta0+glm::pi<float>(),theta1+glm::pi<float>()}))paint.plot(*s,rat2);
-            }
             /*paint.color(Qt::darkYellow);
             paint.verticalLine(glm::pi<float>()+*rat1.undefinedValue());
             paint.color(Qt::yellow);

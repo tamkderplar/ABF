@@ -29,7 +29,8 @@ SOURCES += main.cpp\
     views/thetasliceview.cpp \
     doublecontactfunction.cpp \
     treeforqpointf.cpp \
-    misc/range.cpp
+    misc/range.cpp \
+    restrictedregion.cpp
 
 HEADERS  += mainwindow.h \
     glm.h \
@@ -46,7 +47,8 @@ HEADERS  += mainwindow.h \
     misc/itertools.hpp \
     treeforqpointf.h \
     misc/range.h \
-    misc/misc.h
+    misc/misc.h \
+    restrictedregion.h
 
 FORMS    += mainwindow.ui \
     views/thetasliceview.ui

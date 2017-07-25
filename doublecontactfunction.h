@@ -48,6 +48,7 @@ public:
     QVector<Range> valued01() const;
 
     friend class FreeSpaceBoundary;
+    friend class RestrictedRegion;
     friend class ContactWidget;
     friend class TestDCF;
 private:
