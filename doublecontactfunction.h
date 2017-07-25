@@ -22,7 +22,7 @@ class DoubleContactFunction
     QPointF J,K;
     QLineF H,G;
     float A,B,C,D,E;
-    friend class FreeSpaceBoundary;
+    std::optional<glm::float2> borderValues[2];
     DoubleContactFunction();
 public:
     DoubleContactFunction(Contact original, Contact drawing);
@@ -47,8 +47,13 @@ public:
 
     QVector<Range> valued01() const;
 
+    friend class FreeSpaceBoundary;
     friend class ContactWidget;
     friend class TestDCF;
+private:
+    void computeZeroes();
+    void computeOnes();
+    static std::optional<glm::float2> solveLinearTrig(float A, float B, float C, float base=0.0f);
 };
 
 #endif // DOUBLECONTACTFUNCTION_H

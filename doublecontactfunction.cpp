@@ -42,30 +42,9 @@ DoubleContactFunction::DoubleContactFunction(Contact original, Contact drawing)
         B=cross2(J-K,G.p2()-G.p1())/D;
         C=dot2(J-K,G.p2()-G.p1())/D;
     }
+    computeZeroes();
+    computeOnes();
 }
-
-/*DoubleContactFunction::DoubleContactFunction(const DoubleContactFunction &other)
-{
-    originalContact = other.originalContact;
-    drawingContact = other.drawingContact;
-    A = other.A;
-    B = other.B;
-    C = other.C;
-    D = other.D;
-    E = other.E;
-}*/
-
-/*DoubleContactFunction& DoubleContactFunction::operator=(const DoubleContactFunction &other)
-{
-    originalContact = other.originalContact;
-    drawingContact = other.drawingContact;
-    A = other.A;
-    B = other.B;
-    C = other.C;
-    D = other.D;
-    E = other.E;
-    return *this;
-}*/
 
 bool DoubleContactFunction::isTrigLinear() const
 {
@@ -124,100 +103,14 @@ std::optional<float> DoubleContactFunction::undefinedValue() const {
     }
 }
 
-std::optional<glm::float2> DoubleContactFunction::zeroes() const{
-    float eps = 10e-5;
-    if(isTrigLinear()){
-        //TODO: check eps correctness
-        if(std::fabs(D)<eps)//parallel
-            return std::nullopt;
-    }
-    //return solutions of f(theta)==0
-    //always equivalent with A+B*cos+C*sin==0
-    float hypot = std::hypot(B,C);
-    if(hypot<=eps)return std::nullopt;
-    float sine = -A/hypot;
-    if(std::fabs(sine)>1.0f){
-        return std::nullopt;
-    }
-    float arcsin = std::asin(sine);
-    float arctan = std::atan2(B,C);
-    float pi = glm::pi<float>();
-
-    float z0 = arcsin-arctan;
-    float z1 = pi-arcsin-arctan;
-    float b = isTrigLinear()?
-                pi-atan2(C,-B):
-                pi-atan2(D,E);
-    z0=flipToRange(b,2*pi+b,z0);
-    z1=flipToRange(b,2*pi+b,z1);
-
-    if(originalContactType!=drawingContactType){
-        //TODO: what if for some nominator solution
-        //      denominator dissapears as well
-        //      i.e. D*cos+E*sin==0
-        //do nothing? ranges must break there anyway
-    }
-
-    if (z0<=z1)
-        return std::make_optional(glm::float2{z0,z1});
-
-    return std::make_optional(glm::float2{z1,z0});
+std::optional<glm::float2> DoubleContactFunction::zeroes() const
+{
+    return borderValues[0];
 }
 
 std::optional<glm::float2> DoubleContactFunction::ones() const
 {
-    QVector<float> ret;
-    float eps = 10e-5;
-    //return solutions of f(theta)==1
-    //equivalent to:
-    //(A-1)+B*cos+C*sin==0 - for linear version
-    //A+(B-D)*cos+(C-E)*sin==0 - for rational version
-    //solve it same as 'zeroes', but with local values
-    float locA,locB,locC;
-    if(isTrigLinear()){
-        locA = A-1;
-        locB = B;
-        locC = C;
-        //TODO: check eps correctness
-        if(std::fabs(D)<eps)//parallel
-            return std::nullopt;
-    }
-    if(isTrigRational()){
-        locA = A;
-        locB = B-D;
-        locC = C-E;
-    }
-    //
-    float hypot = std::hypot(locB,locC);
-    if(hypot<=eps)return std::nullopt;
-    float sine = -locA/hypot;
-    if(std::fabs(sine)>1.0f){
-        return std::nullopt;
-    }
-    float arcsin = std::asin(sine);
-    float arctan = std::atan2(locB,locC);
-    float pi = glm::pi<float>();
-
-    float z0 = arcsin-arctan;
-    float z1 = pi-arcsin-arctan;
-    float b = isTrigLinear()?
-                pi-atan2(C,-B):
-                pi-atan2(D,E);
-    z0=flipToRange(b,2*pi+b,z0);
-    z1=flipToRange(b,2*pi+b,z1);
-    ret.append(flipToRange(0,2*pi,arcsin-arctan));
-    ret.append(flipToRange(0,2*pi,pi-arcsin-arctan));
-
-    if(originalContactType!=drawingContactType){
-        //TODO: what if for some nominator solution
-        //      denominator dissapears as well
-        //      i.e. D*cos+E*sin==0
-    }
-
-    if (z0<=z1)
-        return std::make_optional(glm::float2{z0,z1});
-
-    return std::make_optional(glm::float2{z1,z0});
+    return borderValues[1];
 }
 
 bool DoubleContactFunction::hasParallelMovement() const
@@ -360,4 +253,84 @@ QVector<Range> DoubleContactFunction::valued01() const
     }
     Q_ASSERT(normalized.size()<=3);
     return normalized;
+}
+
+void DoubleContactFunction::computeZeroes()
+{
+    if(isTrigRational()){
+        //TODO: what if for some nominator solution
+        //      denominator dissapears as well
+        //      i.e. D*cos+E*sin==0
+        //do nothing? ranges must break there anyway
+    }
+    float eps = 10e-5;
+    float pi = glm::pi<float>();
+
+    if(isTrigLinear()){
+        //TODO: check eps correctness
+        if(std::fabs(D)<eps){//parallel
+            borderValues[0] = std::nullopt;
+            return;
+        }
+    }
+
+    //return solutions of f(theta)==0
+    //always equivalent with A+B*cos+C*sin==0
+    float base = isTrigLinear()?
+                pi-atan2(C,-B):
+                pi-atan2(D,E);
+    borderValues[0] = solveLinearTrig(A,B,C,base);
+}
+
+void DoubleContactFunction::computeOnes()
+{
+    if(isTrigRational()){
+        //TODO: what if for some nominator solution
+        //      denominator dissapears as well
+        //      i.e. D*cos+E*sin==0
+    }
+    float eps = 10e-5;
+    float pi = glm::pi<float>();
+    //return solutions of f(theta)==1
+    //equivalent to:
+    //(A-1)+B*cos+C*sin==0 - for linear version
+    //A+(B-D)*cos+(C-E)*sin==0 - for rational version
+    //solve it same as 'zeroes', but with local values
+    if(isTrigLinear()){
+        //TODO: check eps correctness
+        if(std::fabs(D)<eps){//parallel
+            borderValues[1] = std::nullopt;
+            return;
+        }
+        borderValues[1] = solveLinearTrig(A-1,B,C,pi-atan2(C,-B));
+        return;
+    }
+    if(isTrigRational()){
+        borderValues[1] = solveLinearTrig(A,B-D,C-E,pi-atan2(D,E));
+        return;
+    }
+    Q_UNREACHABLE();
+}
+
+std::optional<glm::float2> DoubleContactFunction::solveLinearTrig(float A, float B, float C, float base)
+{
+    float eps = 10e-5;
+    float hypot = std::hypot(B,C);
+    if(hypot<=eps)return std::nullopt;
+    float sine = -A/hypot;
+    if(std::fabs(sine)>1.0f){
+        return std::nullopt;
+    }
+    float arcsin = std::asin(sine);
+    float arctan = std::atan2(B,C);
+    float pi = glm::pi<float>();
+
+    float z0 = arcsin-arctan;
+    float z1 = pi-arcsin-arctan;
+    z0=flipToRange(base,2*pi+base,z0);
+    z1=flipToRange(base,2*pi+base,z1);
+    if (z0<=z1)
+        return std::make_optional(glm::float2{z0,z1});
+
+    return std::make_optional(glm::float2{z1,z0});
 }
