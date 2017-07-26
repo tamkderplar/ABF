@@ -47,6 +47,8 @@ protected:
     void paintEvent(QPaintEvent*);
 
 private:
+    bool contactUnreachable(QLineF,QLineF) const;
+    bool contactNotDifferentEnough(QLineF,QLineF) const;
     QTransform fromPaintCoords() const;
     QTransform toPaintCoords() const;
     class PainterEX{

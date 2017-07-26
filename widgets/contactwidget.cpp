@@ -103,7 +103,6 @@ void ContactWidget::mouseDoubleClickEvent(QMouseEvent *e)
     QPointF pos = fromPaintCoords().map(QPointF{e->pos()});
     float p = pos.y();
     float theta = pos.x();
-    //QPointF pos;
     if(contact.type==Contact::VertexEdge) {
         QTransform t;
         t.rotateRadians(theta);
@@ -136,20 +135,12 @@ void ContactWidget::paintEvent(QPaintEvent *)
         paint.error();
         return;
     }
-    paint.color(QColor(Qt::white));//p.setPen(QColor(Qt::white));
+    paint.color(QColor(Qt::white));
 
     QVector<QLineF> objE = scene->object().listEdges();
     QVector<QLineF> obsE = scene->obstacles().listEdges();
     QVector<QPointF> objV = scene->object().listVertices();
     QVector<QPointF> obsV = scene->obstacles().listVertices();
-
-    /*if(contact.type==Contact::VertexEdge){
-        if(contact.vertex>=objV.size())return;
-        if(contact.edge  >=obsE.size())return;
-    }else if(contact.type==Contact::EdgeVertex){
-        if(contact.edge  >=objE.size())return;
-        if(contact.vertex>=obsV.size())return;
-    }*/
 
     QVector<Contact> contacts;
     for(int i=0;i<objE.size();++i)
@@ -164,20 +155,14 @@ void ContactWidget::paintEvent(QPaintEvent *)
         }
 
     Contact c=contact;
-    //qDebug() << "\n\n\nContacts:";
-    //qDebug() << ((c.type==Contact::VertexEdge)?"VE":"EV") << " "
-      //       << contact.edge << "\t" << contact.vertex;
 
     for(const QLineF& e: objE){
         for(const QLineF& f: obsE){
-            //skip if share edge
-            //if(c.type==Contact::EdgeVertex && c.edge==e)continue;
-            //if(c.type==Contact::VertexEdge && c.edge==f)continue;
-            //maybe it's too much but stops d==c from happening
-            Contact ev1{e,f.p1(),Contact::EdgeVertex}, ev2{e,f.p2(),Contact::EdgeVertex};
-            Contact ve1{f,e.p1(),Contact::VertexEdge}, ve2{f,e.p2(),Contact::VertexEdge};
-            //TODO: extend to this
-            if(ev1==c || ev2==c || ve1==c || ve2==c)continue;
+            //skip if too far
+            if(contactUnreachable(e,f))continue;
+            //skip if any generated contact is same as original
+            if(contactNotDifferentEnough(e,f))continue;
+            //
             RestrictedRegion rr = {c,e,f};
             paint.color(Qt::green);
             for(auto&s:rr.ceiling()){
@@ -196,63 +181,6 @@ void ContactWidget::paintEvent(QPaintEvent *)
                 paint.circle({s.r.begin,s.dcf(s.r.begin)});
                 paint.circle({s.r.end,s.dcf(s.r.end)});
             }
-            /*DoubleContactFunction dcfs[4] = {{c,ev1},{c,ev2},{c,ve1},{c,ve2}};
-            DoubleContactFunction invs[4] = {{ev1,c},{ev2,c},{ve1,c},{ve2,c}};
-            float theta = std::atan2(cross2(e,f),
-                                     dot2(e,f)
-                                     );
-            theta = flipToRange(0,glm::two_pi<float>(),theta);
-            for(int i=0;i<4;i++){
-                paint.color(Qt::magenta);
-                if(0.0<invs[i](theta) && invs[i](theta)<=1.0)
-                    paint.circle({theta,dcfs[i](theta)},5+2*i);
-                //paint.color(Qt::darkMagenta);
-                float theta2 = theta+glm::pi<float>();
-                if(0.0<invs[i](theta2) && invs[i](theta2)<=1.0)
-                    paint.circle({theta2,dcfs[i](theta2)},5+2*i);
-            }
-            paint.color(Qt::white);
-            //rmin, rmax, dmin, dmax
-            //static and rotating edge with relation to contact edge
-            QLineF statedge = c.type==Contact::EdgeVertex?e:f;
-            QLineF rotedge = c.type==Contact::VertexEdge?e:f;
-            //signed distances of static edge ends
-            float s[2] = {  cross2({c.edge.p1(),statedge.p1()},c.edge)/c.edge.length(),
-                            cross2({c.edge.p1(),statedge.p2()},c.edge)/c.edge.length()};
-            float d[2] = { std::fabs(s[0]), std::fabs(s[1]) };
-            float dmax = qMax(d[0],d[1]);
-            float dmin = (s[0]*s[1]<0.0)?0.0:qMin(d[0],d[1]);
-            float smax = (d[0]>d[1])?s[0]:s[1];
-            float smin = (d[0]>d[1])?s[1]:s[0];
-            //radii of circles by rotating edge ends and closest point
-            float r[3] = {  QLineF{c.vertex,rotedge.p1()}.length(),
-                            QLineF{c.vertex,rotedge.p2()}.length(),
-                            std::fabs(cross2({rotedge.p1(),c.vertex},rotedge)
-                                /rotedge.length())};
-            float rmax = qMax(r[0],r[1]);
-            float rmin = (dot2({c.vertex,rotedge.p1()},rotedge)
-                          *dot2({c.vertex,rotedge.p2()},rotedge)<0.0)
-                    ?r[2]:qMin(r[0],r[1]);
-            //expected intervals before clamping to values [0,1]
-            if(dmax<rmin){
-                //two intervals
-            }
-            else if(s[0]*s[1]<0.0){
-                if(std::fabs(smin)>rmin){
-                    //continuous (double contact for all angles)
-                    //two angles have single point connections for parallel placements
-                }
-                else if(std::fabs(smin)<rmin){
-                    //continuous (but only on one interval, possibly wrapped on 2pi)
-                }
-            }else{
-                if(dmin>rmax){
-                    //zero intervals, no possible solutions;
-                }
-                else if(dmin<rmax){
-                    //continuous (but only on one interval, possibly wrapped on 2pi)
-                }
-            }*/
             /*paint.color(Qt::darkYellow);
             paint.verticalLine(glm::pi<float>()+*rat1.undefinedValue());
             paint.color(Qt::yellow);
@@ -267,37 +195,8 @@ void ContactWidget::paintEvent(QPaintEvent *)
         paint.plotstep(i,1,1);
     }
     for(Contact d:contacts){
-        //if (d.type==c.type &&
-          //  d.vertex==c.vertex &&
-            //d.edge==c.edge)continue;
         if(d==c)continue;
-        //if (d.type==c.type &&
-        //    d.edge==c.edge)continue;//TODO draw separately(parallel movement)
         DoubleContactFunction dcf{c,d};
-        /*DoubleContactFunction invert{d,c};
-        float t0=dcf(0.0f), p0=invert(0.0f);
-        bool drawn=false;
-        for(int i=1;i<width();++i){
-            float theta = i*2*glm::pi<float>()/width();
-            float t1 = dcf(theta), p1 = invert(theta);
-            if(p0>=0.0f && p0<=1.0f && p1>=0.0f && p1<=1.0f ){
-                paint.plotstep(i-1,t0,t1);
-                drawn = true;
-            }else{
-                paint.color(Qt::darkGray);
-                paint.plotstep(i-1,t0,t1);
-                paint.color(Qt::white);
-            }
-            t0 = t1;
-            p0 = p1;
-        }
-        if(drawn){
-            //qDebug() << ((d.type==Contact::VertexEdge)?"VE":"EV")
-              //       << d.edge << "\t" << d.vertex;
-        }else{
-            //qDebug() << ((d.type==Contact::VertexEdge)?"VE":"EV")
-              //       << d.edge << "\t" << d.vertex << "not drawn";
-        }*/
         for(float prlll : dcf.parallelMovementAngle())
         {
             paint.color(QColor(Qt::yellow));
@@ -306,12 +205,8 @@ void ContactWidget::paintEvent(QPaintEvent *)
         }
     }
     for(Contact d:contacts){
-        //if (d.type==c.type &&
-          //  d.vertex==c.vertex &&
-            //d.edge==c.edge)continue;
         if(d==c)continue;
         DoubleContactFunction dcf{c,d};
-        DoubleContactFunction invert{d,c};
         if (std::optional<float> undef = dcf.undefinedValue())
         if (((c.type==d.type && c.edge==d.edge) ||
              (c.type!=d.type &&
@@ -320,41 +215,43 @@ void ContactWidget::paintEvent(QPaintEvent *)
             paint.verticalLine((*undef));
             paint.verticalLine((*undef)+glm::pi<float>());
             paint.color(QColor(Qt::white));
-            /*qDebug() << "A=" << dcf.A << "B=" << dcf.B << "C=" << dcf.C << "D=" << dcf.D
-                     << "E=" << dcf.E << "undef on" << value0;
-        }else{
-            float value0 = 0.5*(*undef)/glm::pi<float>();
-            qDebug() << "A=" << dcf.A << "B=" << dcf.B << "C=" << dcf.C << "D=" << dcf.D
-                     << "E=" << dcf.E << "undef on" << value0 << "undrawn";
-        }else{
-            qDebug() << "A=" << dcf.A << "B=" << dcf.B << "C=" << dcf.C << "D=" << dcf.D
-                     << "E=" << dcf.E;*/
         }
-        /*paint.color(QColor(Qt::yellow));
-        if(auto theta = invert.ones()){
-            paint.circle({(*theta).x,dcf((*theta).x)});
-            paint.circle({(*theta).y,dcf((*theta).y)});
-        }
-        paint.color(QColor(Qt::magenta));
-        if(auto theta = invert.zeroes()){
-            paint.circle({(*theta).x,dcf((*theta).x)},4);
-            paint.circle({(*theta).y,dcf((*theta).y)},4);
-        }
-        paint.color(QColor(Qt::green));
-        if(auto theta = dcf.ones()){
-            paint.circle({(*theta).x,1});
-            paint.circle({(*theta).y,1});
-        }
-        if(auto theta=dcf.zeroes()){
-            paint.circle({(*theta).x,0});
-            paint.circle({(*theta).y,0});
-        }*/
         paint.color(QColor(Qt::white));
     }
     paint.color(QColor(Qt::cyan));
     for(auto&point:objectsPos){
         paint.circle(point);
     }
+}
+
+bool ContactWidget::contactUnreachable(QLineF e, QLineF f) const
+{
+    //MAYBE: remove divisions and square roots to optimize?
+    Contact c=contact;
+    QLineF statedge = c.type==Contact::EdgeVertex?e:f;
+    QLineF rotedge = c.type==Contact::VertexEdge?e:f;
+    float s[2] = {  cross2({c.edge.p1(),statedge.p1()},c.edge)/c.edge.length(),
+                    cross2({c.edge.p1(),statedge.p2()},c.edge)/c.edge.length()};
+    float d[2] = { std::fabs(s[0]), std::fabs(s[1]) };
+    float dmin = (s[0]*s[1]<0.0)?0.0:qMin(d[0],d[1]);
+    float r[2] = {  QLineF{c.vertex,rotedge.p1()}.length(),
+                    QLineF{c.vertex,rotedge.p2()}.length(),};
+    float rmax = qMax(r[0],r[1]);
+    if(s[0]*s[1]>0.0){
+        if(dmin>rmax){
+            //zero intervals, no possible solutions;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool ContactWidget::contactNotDifferentEnough(QLineF e, QLineF f) const
+{
+    Contact c=contact;
+    Contact ev1{e,f.p1(),Contact::EdgeVertex}, ev2{e,f.p2(),Contact::EdgeVertex};
+    Contact ve1{f,e.p1(),Contact::VertexEdge}, ve2{f,e.p2(),Contact::VertexEdge};
+    return (ev1==c || ev2==c || ve1==c || ve2==c);
 }
 
 QTransform ContactWidget::fromPaintCoords() const
@@ -396,8 +293,6 @@ void ContactWidget::PainterEX::plot(float arg0, float arg1,
     QPointF p1 = map.map(QPointF{arg1,dcf(arg1)});
     int start = std::ceil(p0.x());
     int end = std::floor(p1.x());
-    //float theta0 = p0.x();
-    //float theta1 = p1.x();
     if(start==end){
         p.drawLine(p0,map.map(QPointF{arg1,dcf(arg1)}));
         return;
