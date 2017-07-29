@@ -156,6 +156,7 @@ void ContactWidget::paintEvent(QPaintEvent *)
 
     Contact c=contact;
 
+    QList<RestrictedRegion> regions;
     for(const QLineF& e: objE){
         for(const QLineF& f: obsE){
             //skip if too far
@@ -163,29 +164,50 @@ void ContactWidget::paintEvent(QPaintEvent *)
             //skip if any generated contact is same as original
             if(contactNotDifferentEnough(e,f))continue;
             //
-            RestrictedRegion rr = {c,e,f};
-            paint.color(Qt::green);
-            for(auto&s:rr.ceiling()){
-                paint.plot(s.r,s.dcf);
-            }
-            paint.color(Qt::red);
-            for(auto&s:rr.flooring()){
-                paint.plot(s.r,s.dcf);
-            }
-            paint.color(Qt::yellow);
-            for(auto&s:rr.ceiling()){
-                paint.circle({s.r.begin,s.dcf(s.r.begin)});
-                paint.circle({s.r.end,s.dcf(s.r.end)});
-            }
-            for(auto&s:rr.flooring()){
-                paint.circle({s.r.begin,s.dcf(s.r.begin)});
-                paint.circle({s.r.end,s.dcf(s.r.end)});
-            }
+            regions.append({c,e,f});
+            paint.color(Qt::darkRed);
+            //paint.region(regions.last());
             /*paint.color(Qt::darkYellow);
             paint.verticalLine(glm::pi<float>()+*rat1.undefinedValue());
             paint.color(Qt::yellow);
             paint.verticalLine(*rat2.undefinedValue());
             paint.color(QColor(Qt::white));*/
+        }
+    }
+    for(const RestrictedRegion&rr:regions){
+        paint.color(Qt::green);
+        for(auto&s:rr.ceiling()){
+            paint.plot(s.r,s.dcf);
+        }
+        paint.color(Qt::red);
+        for(auto&s:rr.flooring()){
+            paint.plot(s.r,s.dcf);
+        }
+        paint.color(Qt::yellow);
+        for(auto&s:rr.ceiling()){
+            paint.circle({s.r.begin,s.dcf(s.r.begin)});
+            paint.circle({s.r.end,s.dcf(s.r.end)});
+        }
+        for(auto&s:rr.flooring()){
+            paint.circle({s.r.begin,s.dcf(s.r.begin)});
+            paint.circle({s.r.end,s.dcf(s.r.end)});
+        }
+    }
+
+    paint.color(Qt::magenta);
+    for(int i=0;i<regions.size();++i){
+        for(int j=i+1;j<regions.size();++j){
+            RestrictedRegion&rr1 = regions[i];
+            RestrictedRegion&rr2 = regions[j];
+            for(auto&s1:rr1.ceilingAndFlooring()){
+                for(auto&s2:rr2.ceilingAndFlooring()){
+                    for(float t:s1.intersect(s2)){
+                        paint.circle({t,s1.dcf(t)});
+                        paint.circle({t,s2.dcf(t)});
+                        paint.verticalLine(t,{s1.dcf(t),s2.dcf(t)});
+                    }
+                }
+            }
         }
     }
     for(int i=0;i<width();i+=10){

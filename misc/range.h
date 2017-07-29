@@ -10,6 +10,7 @@ struct Range{
     float begin;
     float end;
     std::optional<Range> intersect(const Range& other) const;
+    bool contains(float) const;
 };
 //bool operator==(const Range& r,const Range& other);
 

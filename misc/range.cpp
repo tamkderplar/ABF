@@ -14,6 +14,11 @@ std::optional<Range> Range::intersect(const Range &other) const {
     return {r};
 }
 
+bool Range::contains(float t) const
+{
+    return begin<=t && t<=end;
+}
+
 /*bool operator==(const Range &r, const Range &other){
     return r.begin == other.begin && r.end == other.end;
 }*/
