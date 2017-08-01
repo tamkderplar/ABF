@@ -21,6 +21,7 @@ private:
     QVector<Segment> top;
     QVector<Segment> bottom;
     static QMap<int,int> maxiter;
+    QVector<Segment> sortByRangeStart(const QVector<Segment>&);
 public:
     static QVector<float> solveQuadraticTrig(double x2,double y2,double xy,double x,double y,double u);
     static std::optional<glm::float2> solveLinearTrig(float A, float B, float C, float base=0.0f);

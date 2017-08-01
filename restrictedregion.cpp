@@ -5,7 +5,7 @@ RestrictedRegion::RestrictedRegion(Contact c, QLineF obj, QLineF obs)
 {
     Contact ev1{obj,obs.p1(),Contact::EdgeVertex}, ev2{obj,obs.p2(),Contact::EdgeVertex};
     Contact ve1{obs,obj.p1(),Contact::VertexEdge}, ve2{obs,obj.p2(),Contact::VertexEdge};
-    Q_ASSERT(!(ev1==c || ev2==c || ve1==c || ve2==c));
+    ABF_ASSERT(!(ev1==c || ev2==c || ve1==c || ve2==c));
     DoubleContactFunction dcfs[4] = {{c,ev1},{c,ev2},{c,ve1},{c,ve2}};
     DoubleContactFunction invs[4] = {{ev1,c},{ev2,c},{ve1,c},{ve2,c}};
 
@@ -72,12 +72,14 @@ RestrictedRegion::RestrictedRegion(Contact c, QLineF obj, QLineF obs)
         if(auto s = r.intersect({theta0,theta1}))bottom.append({*s,rat2});
         if(auto s = r.intersect({theta0+glm::pi<float>(),theta1+glm::pi<float>()}))bottom.append({*s,rat2});
     }
-    Q_ASSERT(top.size()<=8);
-    Q_ASSERT(bottom.size()<=8);
+    ABF_ASSERT(top.size()<=9);
+    ABF_ASSERT(bottom.size()<=9);
     //every .valued01() returns at most 3 intervals,
     //so top and bottom have at most 24 segments each,
     //hence it's all O(1), even with sorting
     //TODO: sort top and bottom?
+    top = sortByRangeStart(top);
+    bottom = sortByRangeStart(bottom);
 }
 
 /*QVector<BFPFace> RestrictedRegion::subregions()
@@ -103,6 +105,51 @@ QVector<RestrictedRegion::Segment> RestrictedRegion::ceilingAndFlooring() const
     QVector<RestrictedRegion::Segment> ret;
     ret.append(top);
     ret.append(bottom);
+    return ret;
+}
+
+QVector<RestrictedRegion::Segment> RestrictedRegion::sortByRangeStart
+(const QVector<RestrictedRegion::Segment> &segs)
+{
+    QVector<RestrictedRegion::Segment> ret;
+    //O(size^2), but size<=24 (and usually <=8) so it's O(1)
+    QVector<float> starts,ends;
+    QVector<int> nextids=QVector<int>(segs.size(),-1);
+    QVector<int> previds=QVector<int>(segs.size(),-1);
+    QVector<int> startids;
+    for(int i=0;i<segs.size();++i){
+        for(int j=0;j<ends.size();++j){
+            if(segs[i].r.begin==ends[j])previds[i]=j;
+            if(segs[i].r.end==starts[j])previds[j]=i;
+        }
+        starts.append(segs[i].r.begin);
+        ends.append(segs[i].r.end);
+    }
+    for(int i=0;i<nextids.size();++i){
+        if(previds[i]!=-1)nextids[previds[i]]=i;
+        else startids.append(i);
+    }
+    ABF_ASSERT(startids.size()<=3);
+    if(startids.size()>=2){
+        if(starts[startids[0]]>starts[startids[1]])
+            std::swap(startids[0],startids[1]);
+    }
+    if(startids.size()==3){
+        if(starts[startids[1]]>starts[startids[2]])
+            std::swap(startids[1],startids[2]);
+        if(starts[startids[0]]>starts[startids[1]])
+            std::swap(startids[0],startids[1]);
+    }
+    int j=0;
+    int id = startids[j];
+    for(int i=0;i<nextids.size();++i){
+        if(id==-1)id = startids[++j];
+        ret.append(segs[id]);
+        id=nextids[id];
+    }
+    for(int i=1;i<ret.size();++i){
+        ABF_ASSERT(ret[i-1].r.begin<ret[i].r.begin);
+    }
     return ret;
 }
 
