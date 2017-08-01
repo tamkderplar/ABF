@@ -10,7 +10,7 @@ MainWindow::MainWindow(QWidget *parent) :
     findChild<GraphEditor*>("objEditor")->setGraph(&(bfp.object()));
     findChild<GraphEditor*>("obsEditor")->setGraph(&(bfp.obstacles()));
     findChild<ThetaSliceView*>()->attachScene(&bfp);
-    findChild<ContactWidget*>("contactView1")->attachScene(&bfp);
+    //findChild<ContactWidget*>("contactView1")->attachScene(&bfp);
     findChild<ContactWidget*>("contactView2")->attachScene(&bfp);
     findChild<SceneWidget*>("scene")->attachScene(&bfp);
 }
@@ -41,7 +41,7 @@ void MainWindow::on_pb_setcontact_clicked()
     }
     if(type == Contact::NoContact)return;
 
-    findChild<ContactWidget*>("contactView1")->setContact(topE,topV,type);
+    //findChild<ContactWidget*>("contactView1")->setContact(topE,topV,type);
     findChild<ContactWidget*>("contactView2")->setContact(botE,botV,type);
 }
 #include <QFileDialog>
