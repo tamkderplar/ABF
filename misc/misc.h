@@ -3,6 +3,45 @@
 
 #include <QPointF>
 #include <QDebug>
+#include "glm.h"
+#include "range.h"
+
+#define ABF_ASSERT(X) abfAssert(X)
+
+inline void abfAssert(bool x){
+    if(!x){
+        qDebug()<<x;
+    }
+}
+
+#define ABF_CHECK(X) abfCheck(X)
+inline void abfCheck(bool x){
+    if(!x){
+        qDebug()<<x;
+    }else{
+        qDebug()<<x;
+    }
+}
+
+inline QDebug operator<<(QDebug dbg, const glm::float2& f2){
+    dbg.nospace() << "(" << f2.x << "," << f2.y << ")";
+    return dbg.maybeSpace();
+}
+
+inline QDebug operator<<(QDebug dbg, const glm::float3& f3){
+    dbg.nospace() << "(" << f3.x << "," << f3.y << "," << f3.z << ")";
+    return dbg.maybeSpace();
+}
+
+template <typename T>
+inline QDebug operator<<(QDebug dbg, const std::optional<T>& opt){
+    if(!opt){
+        dbg.nospace() << "<no value>";
+    }else{
+        dbg.nospace() << "<(" << *opt << ")>";
+    }
+    return dbg.maybeSpace();
+}
 
 inline uint qHash(QPointF a)
 {
@@ -30,7 +69,7 @@ inline float dot2(QLineF a,QLineF b){return dot2(a.p2()-a.p1(),b.p2()-b.p1());}
 
 
 inline float flipToRange(float a,float b, float t){
-    Q_ASSERT(b>a);
+    ABF_ASSERT(b>a);
     //qDebug() << "bfflip" << "a:" << a << "b:"<<b<<"t:"<<t;
     /*while(t <  a){t+=b-a;}
     while(t >= b){t-=b-a;}
