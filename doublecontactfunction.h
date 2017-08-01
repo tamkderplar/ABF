@@ -46,6 +46,7 @@ public:
     //QVector<float> parallelMovement(float theta) const;
 
     QVector<Range> valued01() const;
+    QVector<Range> valued01old() const;
 
     friend class FreeSpaceBoundary;
     friend class RestrictedRegion;
@@ -54,7 +55,8 @@ public:
 private:
     void computeZeroes();
     void computeOnes();
-    static std::optional<glm::float2> solveLinearTrig(float A, float B, float C, float base=0.0f);
+    static std::optional<glm::float2> solveLinearTrig(float A, float B, float C);
+    static std::optional<glm::float2> solveLinearTrigOLD(float A, float B, float C);
 };
 
 #endif // DOUBLECONTACTFUNCTION_H

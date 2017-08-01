@@ -15,9 +15,9 @@ DoubleContactFunction::DoubleContactFunction(Contact original, Contact drawing)
     if (originalContactType==Contact::VertexEdge &&
             drawingContactType==Contact::VertexEdge){
         D=cross2(G.p2()-G.p1(),H.p2()-H.p1());
-        A=cross2(G.p2()-G.p1(),G.p1()-H.p1())/D;
-        B=cross2(G.p2()-G.p1(),J-K)/D;
-        C=dot2(G.p2()-G.p1(),J-K)/D;
+        A=cross2(G.p2()-G.p1(),G.p1()-H.p1());
+        B=cross2(G.p2()-G.p1(),J-K);
+        C=dot2(G.p2()-G.p1(),J-K);
     }
     else if(originalContactType==Contact::VertexEdge &&
             drawingContactType==Contact::EdgeVertex){
@@ -38,9 +38,9 @@ DoubleContactFunction::DoubleContactFunction(Contact original, Contact drawing)
     else if(originalContactType==Contact::EdgeVertex &&
             drawingContactType==Contact::EdgeVertex){
         D=cross2(H.p2()-H.p1(),G.p2()-G.p1());
-        A=cross2(G.p1()-H.p1(),G.p2()-G.p1())/D;
-        B=cross2(J-K,G.p2()-G.p1())/D;
-        C=dot2(J-K,G.p2()-G.p1())/D;
+        A=cross2(G.p1()-H.p1(),G.p2()-G.p1());
+        B=cross2(J-K,G.p2()-G.p1());
+        C=dot2(J-K,G.p2()-G.p1());
     }
     computeZeroes();
     computeOnes();
@@ -67,7 +67,7 @@ bool DoubleContactFunction::isValid() const
 
 float DoubleContactFunction::operator()(float theta) const {
     if (isTrigLinear()){
-        return A+B*cos(theta)+C*sin(theta);
+        return (A+B*cos(theta)+C*sin(theta))/D;
     }
     else if(isTrigRational()){
         return (A+B*cos(theta)+C*sin(theta))
@@ -78,7 +78,7 @@ float DoubleContactFunction::operator()(float theta) const {
 
 float DoubleContactFunction::atZero() const {
     if (isTrigLinear()){
-        return A+B;
+        return (A+B)/D;
     }
     else if(isTrigRational()){
         return (A+B)/(D);
@@ -87,10 +87,10 @@ float DoubleContactFunction::atZero() const {
 }
 
 std::optional<float> DoubleContactFunction::undefinedValue() const {
-    if(originalContactType==drawingContactType){
+    if(this->isTrigLinear()){
         //A+B*cos+C*sin version; always defined
         return std::nullopt;
-    }else{
+    }else if(this->isTrigRational()){
         //return theta when D*cos+E*sin==0
         float theta = -std::atan2(D,E);
         float pi = glm::pi<float>();
@@ -159,6 +159,45 @@ QVector<float> DoubleContactFunction::parallelMovementAngle() const
 }
 
 QVector<Range> DoubleContactFunction::valued01() const
+{
+    QVector<Range> ret;
+    QPair<float,int> tab[6];
+    bool z = bool(zeroes()), o = bool(ones()), b =(atZero()>0.0 && atZero()<1.0);
+    int n = 2*z+2*o+2*b;
+    int i = 0;
+    if(b){
+        tab[0]={0.0,-1};
+        tab[n-1]={glm::two_pi<float>(),-1};
+        i=1;
+    }
+    if(z&&o){
+        tab[i+0]={zeroes()->x,0};
+        tab[i+1]={zeroes()->y,0};
+        tab[i+2]={ones()->x,1};
+        tab[i+3]={ones()->y,1};
+        if(tab[i+1].first>tab[i+2].first)qSwap(tab[i+1],tab[i+2]);
+        if(tab[i+0].first>tab[i+1].first)qSwap(tab[i+0],tab[i+1]);
+        if(tab[i+2].first>tab[i+3].first)qSwap(tab[i+2],tab[i+3]);
+        if(tab[i+1].first>tab[i+2].first)qSwap(tab[i+1],tab[i+2]);
+    }else if(z){
+        tab[i+0]={zeroes()->x,0};
+        tab[i+1]={zeroes()->y,0};
+    }else if(o){
+        tab[i+0]={ones()->x,1};
+        tab[i+1]={ones()->y,1};
+    }
+
+    if(atZero()==0.0 || atZero()==1.0){;}//TODO:special case? or not
+    if(n==0)return ret;
+    ret.append({tab[0].first,tab[1].first});
+    if(n==2)return ret;
+    ret.append({tab[2].first,tab[3].first});
+    if(n==4)return ret;
+    ret.append({tab[4].first,tab[5].first});
+    return ret;
+}
+
+QVector<Range> DoubleContactFunction::valued01old() const
 {
     QVector<Range> ret;
     if(this->isTrigRational()){
@@ -251,7 +290,7 @@ QVector<Range> DoubleContactFunction::valued01() const
             normalized.append(r);
         }
     }
-    Q_ASSERT(normalized.size()<=3);
+    ABF_ASSERT(normalized.size()<=3);
     return normalized;
 }
 
@@ -276,10 +315,7 @@ void DoubleContactFunction::computeZeroes()
 
     //return solutions of f(theta)==0
     //always equivalent with A+B*cos+C*sin==0
-    float base = isTrigLinear()?
-                pi-atan2(C,-B):
-                pi-atan2(D,E);
-    borderValues[0] = solveLinearTrig(A,B,C,base);
+    borderValues[0] = solveLinearTrig(A,B,C);
 }
 
 void DoubleContactFunction::computeOnes()
@@ -302,17 +338,30 @@ void DoubleContactFunction::computeOnes()
             borderValues[1] = std::nullopt;
             return;
         }
-        borderValues[1] = solveLinearTrig(A-1,B,C,pi-atan2(C,-B));
+        borderValues[1] = solveLinearTrig(A-D,B,C);
         return;
     }
     if(isTrigRational()){
-        borderValues[1] = solveLinearTrig(A,B-D,C-E,pi-atan2(D,E));
+        borderValues[1] = solveLinearTrig(A,B-D,C-E);
         return;
     }
     Q_UNREACHABLE();
 }
 
-std::optional<glm::float2> DoubleContactFunction::solveLinearTrig(float A, float B, float C, float base)
+std::optional<glm::float2> DoubleContactFunction::solveLinearTrigOLD(float A, float B, float C){
+    float a = 2.0*(C-A), b = -2.0*B, c = A+C;
+    float delta = b*b-2.0*a*c;
+    if(delta<=0.0)return std::nullopt;
+    float z0 = 2.0*atan((b-std::sqrt(delta))/a);
+    float z1 = 2.0*atan((b+std::sqrt(delta))/a);
+    z0 = flipToRange(0.0,glm::two_pi<float>(),z0);
+    z1 = flipToRange(0.0,glm::two_pi<float>(),z1);
+    if (z0<=z1)
+        return {{z0,z1}};
+    return {{z1,z0}};
+}
+
+std::optional<glm::float2> DoubleContactFunction::solveLinearTrig(float A, float B, float C)
 {
     float eps = 10e-5;
     float hypot = std::hypot(B,C);
@@ -322,13 +371,12 @@ std::optional<glm::float2> DoubleContactFunction::solveLinearTrig(float A, float
         return std::nullopt;
     }
     float arcsin = std::asin(sine);
-    float arctan = std::atan2(B,C);
     float pi = glm::pi<float>();
 
-    float z0 = arcsin-arctan;
-    float z1 = pi-arcsin-arctan;
-    z0=flipToRange(base,2*pi+base,z0);
-    z1=flipToRange(base,2*pi+base,z1);
+    float z0 = arcsin-std::atan2(B,C);
+    float z1 = -arcsin-std::atan2(-B,-C);
+    z0=flipToRange(0.0,2.0*pi,z0);
+    z1=flipToRange(0.0,2.0*pi,z1);
     if (z0<=z1)
         return std::make_optional(glm::float2{z0,z1});
 
