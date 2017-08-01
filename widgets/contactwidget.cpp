@@ -156,6 +156,11 @@ void ContactWidget::paintEvent(QPaintEvent *)
 
     Contact c=contact;
 
+    paint.color(Qt::darkGray);
+    /*for(Contact d:contacts){
+        paint.plot({0.0,glm::two_pi<float>()},{c,d});
+    }*/
+
     QList<RestrictedRegion> regions;
     for(const QLineF& e: objE){
         for(const QLineF& f: obsE){
@@ -166,6 +171,34 @@ void ContactWidget::paintEvent(QPaintEvent *)
             //
             regions.append({c,e,f});
             paint.color(Qt::darkRed);
+            DoubleContactFunction dcfE0({e,f.p1(),Contact::VertexEdge},c);
+            DoubleContactFunction dcfE1({e,f.p2(),Contact::VertexEdge},c);
+            DoubleContactFunction dcfF0({f,e.p1(),Contact::EdgeVertex},c);
+            DoubleContactFunction dcfF1({f,e.p2(),Contact::EdgeVertex},c);
+            auto E00 = dcfE0.zeroes();
+            auto F00 = dcfF0.zeroes();
+            auto E01 = dcfE0.ones();
+            auto F01 = dcfF0.ones();
+            auto E10 = dcfE1.zeroes();
+            auto F10 = dcfF1.zeroes();
+            auto E11 = dcfE1.ones();
+            auto F11 = dcfF1.ones();
+            float d00x = (E00&&F00)?E00->x-F00->x:0.0;
+            float d00y = (E00&&F00)?E00->y-F00->y:0.0;
+            float d01x = (E01&&F10)?E01->x-F10->x:0.0;
+            float d01y = (E01&&F10)?E01->y-F10->y:0.0;
+            float d10x = (E10&&F01)?E10->x-F01->x:0.0;
+            float d10y = (E10&&F01)?E10->y-F01->y:0.0;
+            float d11x = (E11&&F11)?E11->x-F11->x:0.0;
+            float d11y = (E11&&F11)?E11->y-F11->y:0.0;
+            ABF_CHECK(d00x==0.0);
+            ABF_CHECK(d00y==0.0);
+            ABF_CHECK(d01x==0.0);
+            ABF_CHECK(d01y==0.0);
+            ABF_CHECK(d10x==0.0);
+            ABF_CHECK(d10y==0.0);
+            ABF_CHECK(d11x==0.0);
+            ABF_CHECK(d11y==0.0);
             //paint.region(regions.last());
             /*paint.color(Qt::darkYellow);
             paint.verticalLine(glm::pi<float>()+*rat1.undefinedValue());
@@ -183,6 +216,9 @@ void ContactWidget::paintEvent(QPaintEvent *)
         for(auto&s:rr.flooring()){
             paint.plot(s.r,s.dcf);
         }
+    }
+#if 0
+    for(const RestrictedRegion&rr:regions){
         paint.color(Qt::yellow);
         for(auto&s:rr.ceiling()){
             paint.circle({s.r.begin,s.dcf(s.r.begin)});
@@ -193,6 +229,22 @@ void ContactWidget::paintEvent(QPaintEvent *)
             paint.circle({s.r.end,s.dcf(s.r.end)});
         }
     }
+#else
+    for(Contact d:contacts){
+        DoubleContactFunction dcf{c,d};
+        DoubleContactFunction inv{d,c};
+        paint.color(Qt::yellow);
+        if(auto z=inv.zeroes()){
+            paint.circle({z->x,dcf(z->x)});
+            paint.circle({z->y,dcf(z->y)});
+        }
+        paint.color(Qt::magenta);
+        if(auto z=inv.ones()){
+            paint.circle({z->x,dcf(z->x)},6);
+            paint.circle({z->y,dcf(z->y)},6);
+        }
+    }
+#endif
 
     paint.color(Qt::magenta);
     for(int i=0;i<regions.size();++i){
