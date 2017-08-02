@@ -29,6 +29,7 @@ public:
     const Graph& obstacles() const;
     QVector<BFPFace> faces() const;
     void computeFaces();
+    void saveAsError(const char*) const;
 private:
     Graph objectGraph;
     Graph obstaclesGraph;

@@ -28,10 +28,10 @@ SOURCES += main.cpp\
     widgets/scenewidget.cpp \
     views/thetasliceview.cpp \
     doublecontactfunction.cpp \
-    treeforqpointf.cpp \
     misc/range.cpp \
     restrictedregion.cpp \
-    contact.cpp
+    contact.cpp \
+    abfexception.cpp
 
 HEADERS  += mainwindow.h \
     glm.h \
@@ -45,12 +45,11 @@ HEADERS  += mainwindow.h \
     widgets/scenewidget.h \
     views/thetasliceview.h \
     doublecontactfunction.h \
-    misc/itertools.hpp \
-    treeforqpointf.h \
     misc/range.h \
     misc/misc.h \
     restrictedregion.h \
-    contact.h
+    contact.h \
+    abfexception.h
 
 FORMS    += mainwindow.ui \
     views/thetasliceview.ui

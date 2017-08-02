@@ -5,6 +5,7 @@
 
 #include <QDataStream>
 #include <algorithm>
+#include <QFile>
 
 FreeSpaceBoundary::FreeSpaceBoundary()
 {
@@ -116,6 +117,21 @@ void FreeSpaceBoundary::computeFaces()
                                 cross2({c.edge.p1(),statedge.p2()},c.edge)/c.edge.length()};
             }
     }
+}
+
+void FreeSpaceBoundary::saveAsError(const char *s) const
+{
+    QString filename(s);
+    int n = 0;
+    while(QFile(filename).exists()){
+        filename = QString(s)+QString::number(n);
+        ++n;
+    }
+    QFile file(filename);
+    file.open(QIODevice::WriteOnly);
+    QDataStream out(&file);
+    out<<*this;
+    file.close();
 }
 
 QDataStream &operator<<(QDataStream &out, const FreeSpaceBoundary &fsb)

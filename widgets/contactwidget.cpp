@@ -127,7 +127,7 @@ void ContactWidget::mouseReleaseEvent(QMouseEvent *)
 }
 
 void ContactWidget::paintEvent(QPaintEvent *)
-{
+try {
     if(!scene)return;
     updateContact();
     PainterEX paint(this);
@@ -298,6 +298,15 @@ void ContactWidget::paintEvent(QPaintEvent *)
     for(auto&point:objectsPos){
         paint.circle(point);
     }
+}catch(const ABFException&e){
+    scene->saveAsError(e.what());
+    throw;
+}catch(const std::exception&e){
+    scene->saveAsError(e.what());
+    throw;
+}catch(...){
+    scene->saveAsError("heck");
+    throw;
 }
 
 bool ContactWidget::contactUnreachable(QLineF e, QLineF f) const

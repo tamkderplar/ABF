@@ -2,7 +2,6 @@
 
 #include <QPainter>
 #include <QMouseEvent>
-#include "cppitertools/itertools.hpp"
 #include "misc/misc.h"
 
 ThetaSliceWidget::ThetaSliceWidget(QWidget *parent) : QWidget(parent)
@@ -211,9 +210,11 @@ void ThetaSliceWidget::paintEvent(QPaintEvent *)
                     //  or rather Minkowski difference edgeE-edgeI
                     parallelogram p = {edgeE.p1()-edgeI.p1(),dir(edgeI),dir(edgeE)};
                     QVector<QPointF> corners;
-                    for(auto&& pair:iter::product(list_QLineF(edgeE),
-                                                  list_QLineF(edgeI))){
-                        corners.append(std::get<0>(pair)-std::get<1>(pair));
+                    {
+                        corners.append(edgeE.p1()-edgeI.p1());
+                        corners.append(edgeE.p1()-edgeI.p2());
+                        corners.append(edgeE.p2()-edgeI.p1());
+                        corners.append(edgeE.p2()-edgeI.p2());
                     }
                     QVector<QLineF> sides = {{corners[0],corners[1]}
                                             ,{corners[2],corners[3]}

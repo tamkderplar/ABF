@@ -5,12 +5,14 @@
 #include <QDebug>
 #include "glm.h"
 #include "range.h"
+#include "abfexception.h"
 
 #define ABF_ASSERT(X) abfAssert(X)
 
 inline void abfAssert(bool x){
     if(!x){
         qDebug()<<x;
+        throw ABFException("abfError");
     }
 }
 
