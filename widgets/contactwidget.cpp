@@ -437,8 +437,8 @@ void ContactWidget::PainterEX::face(const BFPFace &f)
     }
     float theta = start*2*glm::pi<float>()/p.window().width();
     for(int i=start; i<end; i++){
-        p1t = map.map(QPointF{theta,f.top()(theta)});
-        p1b = map.map(QPointF{theta,f.bottom()(theta)});
+        p1t = {i,map.map(QPointF{theta,f.top()(theta)}).y()};
+        p1b = {i,map.map(QPointF{theta,f.bottom()(theta)}).y()};
         p.drawLine(p0t,p0b);
         p.drawLine(p1t,p1b);
         p0t = p1t;
