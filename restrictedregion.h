@@ -2,13 +2,13 @@
 #define RESTRICTEDREGION_H
 
 #include "doublecontactfunction.h"
+#include "bfpface.h"
 
 class RestrictedRegion
 {
 public:
     RestrictedRegion(Contact c, QLineF obj, QLineF obs);
 
-    //QVector<BFPFace> subregions();
     struct Segment{
         Range r;
         DoubleContactFunction dcf;
@@ -17,9 +17,11 @@ public:
     QVector<Segment> ceiling() const;
     QVector<Segment> flooring() const;
     QVector<Segment> ceilingAndFlooring() const;
+    QList<BFPFace> subregions();
 private:
     QVector<Segment> top;
     QVector<Segment> bottom;
+    QList<BFPFace> faces;
     static QMap<int,int> maxiter;
     QVector<Segment> sortByRangeStart(const QVector<Segment>&);
 public:

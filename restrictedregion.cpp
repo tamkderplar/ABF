@@ -78,17 +78,50 @@ RestrictedRegion::RestrictedRegion(Contact c, QLineF obj, QLineF obs)
     //so top and bottom have at most 24 segments each,
     //hence it's all O(1), even with sorting
     //TODO: sort top and bottom?
-    top = sortByRangeStart(top);
-    bottom = sortByRangeStart(bottom);
+    QVector<Segment> t = sortByRangeStart(top);
+    QVector<Segment> b = sortByRangeStart(bottom);
+    /*top.clear();
+    bottom.clear();*/
+    //top = chopTo01(top);
+    //bottom = chopTo01(bottom);
+    if(t.size()>0){
+        ABF_ASSERT(b.size()>0);
+        ABF_ASSERT(t[0].r.begin==b[0].r.begin);
+        ABF_ASSERT(t.last().r.end==b.last().r.end);
+        float newbegin, newend;
+        for(int i=0,j=0;i<t.size()&&j<b.size();){
+            if(t[i].r.begin>b[j].r.begin){
+                newbegin=t[i].r.begin;
+            }else{
+                newbegin=b[j].r.begin;
+            }
+            if(t[i].r.end<b[j].r.end){
+                newend = t[i].r.end;
+            }else{
+                newend = b[j].r.end;
+            }
+            if(newbegin<newend){
+                faces.append({{newbegin,newend},t[i].dcf,b[j].dcf});
+            }
+            if(t[i].r.end<b[j].r.end){
+                ++i;
+            }else{
+                ++j;
+            }
+        }
+    }else{
+        ABF_ASSERT(bottom.size()==0);
+    }
 }
 
-/*QVector<BFPFace> RestrictedRegion::subregions()
+QList<BFPFace> RestrictedRegion::subregions()
 {
     //top and bottom have at most 24 segments each,
     //with at least two shared region ends that's 23 segment endpoints for each
     //or 46 segment endpoints total to distribute between region ends,
     //that gives upped bound of 47 subregions
-}*/
+    return faces;
+}
 
 QVector<RestrictedRegion::Segment> RestrictedRegion::ceiling() const
 {
@@ -130,6 +163,8 @@ QVector<RestrictedRegion::Segment> RestrictedRegion::sortByRangeStart
         else startids.append(i);
     }
     ABF_ASSERT(startids.size()<=3);
+    ABF_ASSERT(previds.count(-1)<=3);
+    ABF_ASSERT(nextids.count(-1)<=3);
     if(startids.size()>=2){
         if(starts[startids[0]]>starts[startids[1]])
             std::swap(startids[0],startids[1]);

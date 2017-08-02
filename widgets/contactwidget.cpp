@@ -171,6 +171,8 @@ void ContactWidget::paintEvent(QPaintEvent *)
             //
             regions.append({c,e,f});
             paint.color(Qt::darkRed);
+            for(auto&f:regions.last().subregions())
+                paint.face(f);
             DoubleContactFunction dcfE0({e,f.p1(),Contact::VertexEdge},c);
             DoubleContactFunction dcfE1({e,f.p2(),Contact::VertexEdge},c);
             DoubleContactFunction dcfF0({f,e.p1(),Contact::EdgeVertex},c);
@@ -409,6 +411,32 @@ void ContactWidget::PainterEX::circle(QPointF pos,int r)
         center.setX(center.x()-w);
         p.drawEllipse(center,r,r);
     }
+}
+
+void ContactWidget::PainterEX::face(const BFPFace &f)
+{
+    QPointF p0t = map.map(QPointF{f.range().begin,f.top()(f.range().begin)});
+    QPointF p1t = map.map(QPointF{f.range().end,f.top()(f.range().end)});
+    QPointF p0b = map.map(QPointF{f.range().begin,f.bottom()(f.range().begin)});
+    QPointF p1b = map.map(QPointF{f.range().end,f.bottom()(f.range().end)});
+    int start = std::ceil(p0t.x());
+    int end = std::floor(p1t.x());
+    if(start==end){
+        p.drawLine(p0t,p0b);
+        p.drawLine(p1t,p1b);
+        return;
+    }
+    float theta = start*2*glm::pi<float>()/p.window().width();
+    for(int i=start; i<end; i++){
+        p1t = map.map(QPointF{theta,f.top()(theta)});
+        p1b = map.map(QPointF{theta,f.bottom()(theta)});
+        p.drawLine(p0t,p0b);
+        p.drawLine(p1t,p1b);
+        p0t = p1t;
+        p0b = p1b;
+        theta = (i+1)*2*glm::pi<float>()/p.window().width();
+    }
+    //p.drawLine(p0, map.map(QPointF{arg1,dcf(arg1)}));
 }
 
 void ContactWidget::PainterEX::color(QColor c)

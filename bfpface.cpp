@@ -2,40 +2,33 @@
 
 #include <QTransform>
 
-BFPFace::BFPFace(QLineF objLine, QLineF obsLine):
-    objectLine(objLine),
-    obstacleLine(obsLine)
+BFPFace::BFPFace(Range r,DoubleContactFunction t,DoubleContactFunction b):
+    r(r),
+    t(t),
+    b(b)
 {
 
 }
 
 BFPFace::BFPFace(const BFPFace &other):
-    objectLine(other.objectLine),
-    obstacleLine(other.obstacleLine)
+    r(other.r),
+    t(other.t),
+    b(other.b)
 {
 
 }
 
-QPointF BFPFace::f00(float t)
+Range BFPFace::range() const
 {
-    QTransform mat = QTransform().rotateRadians(t);
-    return obstacleLine.p1()-objectLine.p1()*mat;
+    return r;
 }
 
-QPointF BFPFace::f01(float t)
+DoubleContactFunction BFPFace::top() const
 {
-    QTransform mat = QTransform().rotateRadians(t);
-    return obstacleLine.p1()-objectLine.p2()*mat;
+    return t;
 }
 
-QPointF BFPFace::f10(float t)
+DoubleContactFunction BFPFace::bottom() const
 {
-    QTransform mat = QTransform().rotateRadians(t);
-    return obstacleLine.p2()-objectLine.p1()*mat;
-}
-
-QPointF BFPFace::f11(float t)
-{
-    QTransform mat = QTransform().rotateRadians(t);
-    return obstacleLine.p2()-objectLine.p2()*mat;
+    return b;
 }

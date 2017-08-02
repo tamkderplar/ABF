@@ -1,11 +1,12 @@
 #ifndef DOUBLECONTACTFUNCTION_H
 #define DOUBLECONTACTFUNCTION_H
 
-#include "freespaceboundary.h"
 
 #include <QDebug>
 
+#include "contact.h"
 #include "misc/range.h"
+#include "glm.h"
 
 struct FreeContactEdge{
     struct Vertex{

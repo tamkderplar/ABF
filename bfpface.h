@@ -1,20 +1,20 @@
 #ifndef BFPFACE_H
 #define BFPFACE_H
 
-#include <QLineF>
+#include "doublecontactfunction.h"
 
 class BFPFace
 {
 public:
-    BFPFace(QLineF objLine,QLineF obsLine);
+    BFPFace(Range r,DoubleContactFunction t,DoubleContactFunction b);
     BFPFace(const BFPFace&other);
-    QPointF f00(float t);
-    QPointF f01(float t);
-    QPointF f10(float t);
-    QPointF f11(float t);
+    Range range() const;
+    DoubleContactFunction top() const;
+    DoubleContactFunction bottom() const;
 
 private:
-    QLineF objectLine, obstacleLine;
+    Range r;
+    DoubleContactFunction t, b;
 };
 
 #endif // BFPFACE_H

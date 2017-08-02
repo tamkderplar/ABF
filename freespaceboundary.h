@@ -2,29 +2,11 @@
 #define FREESPACEBOUNDARY_H
 
 #include <QVector>
-#include <QPointF>
-#include <QLineF>
 
 #include "bfpface.h"
 #include "graph.h"
 #include "glm.h"
-
-struct Contact
-{
-    QLineF edge;
-    QPointF vertex;
-    enum ContactType{
-        NoContact,
-        EdgeVertex,
-        VertexEdge,
-    } type;
-    bool operator!=(const Contact& other){
-        return type!=other.type || vertex!=other.vertex || edge!=other.edge;
-    }
-    bool operator==(const Contact& other){
-        return !(*this!=other);
-    }
-};
+#include "contact.h"
 
 struct DoubleContactEdge{
     float theta1,theta2;

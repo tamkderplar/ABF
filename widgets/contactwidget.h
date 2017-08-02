@@ -62,6 +62,7 @@ private:
         void plot(Range arg, const DoubleContactFunction&);
         void plotstep(int arg0, float t0, float t1);
         void circle(QPointF p,int r=5);
+        void face(const BFPFace&);
         void color(QColor c);
         void error();
     };
