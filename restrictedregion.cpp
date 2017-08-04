@@ -26,7 +26,7 @@ RestrictedRegion::RestrictedRegion(Contact c, QLineF obj, QLineF obs)
         tflip = true;
     }
     //linear
-    int order = ((s[0]<s[1]) != tflip);
+    int order = ((s[0]<s[1]) != tflip) != bool(!isVE);
     DoubleContactFunction lin1 = dcfs[order+2*isVE];
     DoubleContactFunction lin2 = dcfs[1-order+2*isVE];
     DoubleContactFunction invlin1 = invs[order+2*isVE];
@@ -283,18 +283,18 @@ QVector<float> RestrictedRegion::Segment::intersect(const RestrictedRegion::Segm
             ret.append(solveQuadraticTrig(double(dcf.B)*s.dcf.D,
                                           double(dcf.C)*s.dcf.E,
                                           double(dcf.B)*s.dcf.E+double(dcf.C)*s.dcf.D,
-                                          double(dcf.A)*s.dcf.D-double(s.dcf.B),
-                                          double(dcf.A)*s.dcf.E-double(s.dcf.C),
-                                          -double(s.dcf.A)));
+                                          double(dcf.A)*s.dcf.D-double(s.dcf.B)*dcf.D,
+                                          double(dcf.A)*s.dcf.E-double(s.dcf.C)*dcf.D,
+                                          -double(s.dcf.A)*dcf.D));
         }
     }else if(dcf.isTrigRational()){
         if(s.dcf.isTrigLinear()){
             ret.append(solveQuadraticTrig(double(s.dcf.B)*dcf.D,
                                           double(s.dcf.C)*dcf.E,
                                           double(s.dcf.B)*dcf.E+double(s.dcf.C)*dcf.D,
-                                          double(s.dcf.A)*dcf.D-double(dcf.B),
-                                          double(s.dcf.A)*dcf.E-double(dcf.C),
-                                          -double(dcf.A)));
+                                          double(s.dcf.A)*dcf.D-double(dcf.B)*s.dcf.D,
+                                          double(s.dcf.A)*dcf.E-double(dcf.C)*s.dcf.D,
+                                          -double(dcf.A)*s.dcf.D));
         }else if(s.dcf.isTrigRational()){
             ret.append(solveQuadraticTrig(double(dcf.B)*s.dcf.D-double(s.dcf.B)*dcf.D,
                                           double(dcf.C)*s.dcf.E+double(s.dcf.C)*dcf.E,

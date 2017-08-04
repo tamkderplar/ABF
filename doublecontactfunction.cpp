@@ -118,7 +118,8 @@ bool DoubleContactFunction::hasParallelMovement() const
     float eps = 10e-5;
     if(this->isTrigRational()){
         //TODO: check eps correctness
-        return glm::abs(glm::abs(A)*H.length() - glm::abs(B)*G.length())
+        float invA = cross2(H,{H.p1(),K});
+        return glm::abs(glm::abs(A)*H.length() - glm::abs(invA)*G.length())
                 < eps * H.length() * G.length();
     } else if(this->isTrigLinear()) {
         //TODO: check eps correctness
@@ -139,7 +140,10 @@ QVector<float> DoubleContactFunction::parallelMovementAngle() const
     }
     if(this->isTrigRational()){
         float arctan = std::atan2(cross2(G,H),dot2(G,H));
-        ret.append(arctan);
+        if(originalContactType==Contact::VertexEdge)
+            ret.append(arctan);
+        if(originalContactType==Contact::EdgeVertex)
+            ret.append(-arctan);
         return ret;
     } else if(this->isTrigLinear()) {
         float sine = cross2(G,{G.p1(),H.p1()})/(QLineF(J,K).length()*G.length());
@@ -147,12 +151,21 @@ QVector<float> DoubleContactFunction::parallelMovementAngle() const
         float arctan = std::atan2(cross2(G,{K,J}),dot2(G,{K,J}));
         float pi = glm::pi<float>();
         if(std::fabs(sine)>1.0f-eps){
-            ret.append(flipToRange(0,2*pi,arctan));
+            if(originalContactType==Contact::VertexEdge)
+                ret.append(flipToRange(0,2*pi,arctan));
+            if(originalContactType==Contact::EdgeVertex)
+                ret.append(-flipToRange(0,2*pi,arctan));
             return ret;
         }
         //solutions are distiguishable enough
-        ret.append(flipToRange(0,2*pi,arcsin-arctan));
-        ret.append(flipToRange(0,2*pi,pi-arcsin-arctan));
+        if(originalContactType==Contact::VertexEdge){
+            ret.append(flipToRange(0,2*pi,arcsin-arctan));
+            ret.append(flipToRange(0,2*pi,pi-arcsin-arctan));
+        }
+        if(originalContactType==Contact::EdgeVertex){
+            ret.append(-flipToRange(0,2*pi,arcsin-arctan));
+            ret.append(-flipToRange(0,2*pi,pi-arcsin-arctan));
+        }
         return ret;
     }
     return ret;

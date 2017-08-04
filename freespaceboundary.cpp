@@ -123,11 +123,11 @@ void FreeSpaceBoundary::saveAsError(const char *s) const
 {
     QString filename(s);
     int n = 0;
-    while(QFile(filename).exists()){
+    while(QFile(filename+".abf").exists()){
         filename = QString(s)+QString::number(n);
         ++n;
     }
-    QFile file(filename);
+    QFile file(filename+".abf");
     file.open(QIODevice::WriteOnly);
     QDataStream out(&file);
     out<<*this;
